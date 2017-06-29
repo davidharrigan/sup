@@ -15,6 +15,7 @@
 package todo
 
 import (
+	"os/exec"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4"
@@ -22,7 +23,15 @@ import (
 )
 
 func LookupGitUser() string {
-	return ""
+	cmdName := "git"
+	cmdArgs := []string{"config", "--global", "user.email"}
+	user := ""
+
+	if out, err := exec.Command(cmdName, cmdArgs...).Output(); err == nil {
+		user = strings.TrimSpace(string(out))
+	}
+
+	return user
 }
 
 func GetCommitObject(path string) (*object.Commit, error) {

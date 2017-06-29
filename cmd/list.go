@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/davidharrigan/sup/todo"
 	"github.com/spf13/cobra"
 
@@ -30,6 +31,7 @@ var listCmd = &cobra.Command{
 }
 
 var skipAuthor bool
+var skipGit bool
 var email string
 
 func listRun(cmd *cobra.Command, args []string) {
@@ -44,13 +46,16 @@ func listRun(cmd *cobra.Command, args []string) {
 	author := email
 
 	// determine if this is a git directory
-	if !skipAuthor {
+	if !skipGit && !skipAuthor {
 		commit, err = todo.GetCommitObject(root)
 		if err == nil {
 			// log error
 			if author == "" {
 				author = todo.LookupGitUser()
 			}
+		}
+		if author != "" {
+			fmt.Printf("Looking up commits by %s...\n\n", author)
 		}
 	} else {
 		author = ""
@@ -63,6 +68,7 @@ func listRun(cmd *cobra.Command, args []string) {
 func init() {
 	RootCmd.AddCommand(listCmd)
 
+	listCmd.Flags().BoolVarP(&skipGit, "skip-git", "g", false, "Skip current git commit lookup")
 	listCmd.Flags().BoolVarP(&skipAuthor, "skip-author", "a", false, "Skip author lookup")
 	listCmd.Flags().StringVarP(&email, "email", "e", "", "Override author look up value (default git config --global user.email")
 }

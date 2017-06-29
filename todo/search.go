@@ -22,6 +22,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // SearchResult is a struct to store search result
@@ -37,13 +39,13 @@ type SearchResults map[string][]SearchResult
 
 // Search will walk through all directories starting at the given path and will find
 // all files that match the search criteria
-func Search(path string) SearchResults {
+func Search(root string, commit *object.Commit, author string) SearchResults {
 	searchResults := make(map[string][]SearchResult)
-	filepath.Walk(path, visit(searchResults))
+	filepath.Walk(root, visit(searchResults, commit, author))
 	return searchResults
 }
 
-func visit(searchResults SearchResults) filepath.WalkFunc {
+func visit(searchResults SearchResults, commit *object.Commit, author string) filepath.WalkFunc {
 	searchTerm := "TODO"
 	return func(path string, f os.FileInfo, err error) error {
 		if err != nil {
@@ -53,7 +55,16 @@ func visit(searchResults SearchResults) filepath.WalkFunc {
 		if f.IsDir() {
 			return nil
 		}
-		result := SearchFile(path, []byte(searchTerm))
+
+		// Use normal search if commit is nil, otherwise search the current git commit
+		var result []SearchResult
+		if commit == nil {
+			result = SearchFile(path, []byte(searchTerm))
+		} else {
+			result, _ = SearchCurrentCommit(path, commit, author, searchTerm)
+		}
+
+		// Only add to searchResults if result has anything in it
 		if len(result) > 0 {
 			searchResults[path] = append(searchResults[path], result...)
 		}

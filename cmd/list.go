@@ -17,7 +17,8 @@ package cmd
 import (
 	"github.com/davidharrigan/sup/todo"
 	"github.com/spf13/cobra"
-	"gopkg.in/src-d/go-git.v4"
+
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // listCmd represents the list command
@@ -28,28 +29,40 @@ var listCmd = &cobra.Command{
 	Run:   listRun,
 }
 
+var skipAuthor bool
+var email string
+
 func listRun(cmd *cobra.Command, args []string) {
 	root := "./"
 	if len(args) > 0 {
 		root = args[0]
 	}
-	result := todo.Search(root)
+
+	var commit *object.Commit
+	var err error
+
+	author := email
 
 	// determine if this is a git directory
-	r, err := git.PlainOpen(root)
-	if err == nil {
-		author := "dharrigan118@gmail.com"
-		gitResult, _ := todo.SearchCurrentCommit(r, author, result)
-		todo.PrintSearchResults(gitResult)
+	if !skipAuthor {
+		commit, err = todo.GetCommitObject(root)
+		if err == nil {
+			// log error
+			if author == "" {
+				author = todo.LookupGitUser()
+			}
+		}
 	} else {
-
-		todo.PrintSearchResults(result)
+		author = ""
 	}
+
+	result := todo.Search(root, commit, author)
+	todo.PrintSearchResults(result)
 }
 
 func init() {
 	RootCmd.AddCommand(listCmd)
 
-	listCmd.Flags().BoolP("skip-author", "a", false, "Skip author lookup")
-	listCmd.Flags().StringP("email", "e", "", "Override author look up value (default git config --global user.email")
+	listCmd.Flags().BoolVarP(&skipAuthor, "skip-author", "a", false, "Skip author lookup")
+	listCmd.Flags().StringVarP(&email, "email", "e", "", "Override author look up value (default git config --global user.email")
 }

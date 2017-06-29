@@ -15,12 +15,22 @@
 package todo
 
 import (
-	"gopkg.in/src-d/go-git.v4"
 	"strings"
+
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-func SearchCurrentCommit(repo *git.Repository, author string, result SearchResults) (SearchResults, error) {
-	searchResults := make(map[string][]SearchResult)
+func LookupGitUser() string {
+	return ""
+}
+
+func GetCommitObject(path string) (*object.Commit, error) {
+	repo, err := git.PlainOpen(path)
+	if err != nil {
+		// log
+		return nil, err
+	}
 
 	ref, err := repo.Head()
 	if err != nil {
@@ -29,27 +39,28 @@ func SearchCurrentCommit(repo *git.Repository, author string, result SearchResul
 	}
 
 	commit, err := repo.CommitObject(ref.Hash())
+	return commit, err
+}
+
+func SearchCurrentCommit(path string, commit *object.Commit, author string, searchTerm string) ([]SearchResult, error) {
+	blame, err := git.Blame(commit, path)
 	if err != nil {
 		// log
 		return nil, err
 	}
 
-	for f := range result {
-		gitResult := []SearchResult{}
-		blame, err := git.Blame(commit, f)
+	gitResult := []SearchResult{}
 
-		if err == nil {
+	for i, line := range blame.Lines {
+		if strings.Contains(line.Text, searchTerm) {
 
-			for i, line := range blame.Lines {
-				if strings.Contains(line.Text, "TODO") {
-					match := SearchResult{line: i, file: f, content: strings.TrimSpace(line.Text), author: line.Author}
-					gitResult = append(gitResult, match)
-				}
+			if author == "" || author == line.Author {
+				match := SearchResult{line: i, file: path, content: strings.TrimSpace(line.Text), author: line.Author}
+				gitResult = append(gitResult, match)
 			}
-		}
 
-		searchResults[f] = gitResult
+		}
 	}
 
-	return searchResults, nil
+	return gitResult, nil
 }

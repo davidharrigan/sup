@@ -22,6 +22,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
+// LookupGitUser lookups git user with the git command
 func LookupGitUser() string {
 	cmdName := "git"
 	cmdArgs := []string{"config", "--global", "user.email"}
@@ -34,6 +35,7 @@ func LookupGitUser() string {
 	return user
 }
 
+// GetCommitObject returns the commit object at the current path
 func GetCommitObject(path string) (*object.Commit, error) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
@@ -51,6 +53,7 @@ func GetCommitObject(path string) (*object.Commit, error) {
 	return commit, err
 }
 
+// SearchCurrentCommit searches for matching search terms at the current commit
 func SearchCurrentCommit(path string, commit *object.Commit, author string, searchTerm string) ([]SearchResult, error) {
 	blame, err := git.Blame(commit, path)
 	if err != nil {

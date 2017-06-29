@@ -102,7 +102,7 @@ func PrintSearchResults(searchResults SearchResults) {
 	var count int
 	for _, v := range searchResults {
 		for _, result := range v {
-			fmt.Printf("%s [%d] %s\n", result.file, result.line, result.content)
+			fmt.Printf("%s [%d] >>> %s\n", result.file, result.line, result.content)
 			count++
 		}
 	}

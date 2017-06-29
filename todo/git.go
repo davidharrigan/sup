@@ -13,3 +13,43 @@
 // limitations under the License.
 
 package todo
+
+import (
+	"gopkg.in/src-d/go-git.v4"
+	"strings"
+)
+
+func SearchCurrentCommit(repo *git.Repository, author string, result SearchResults) (SearchResults, error) {
+	searchResults := make(map[string][]SearchResult)
+
+	ref, err := repo.Head()
+	if err != nil {
+		// log
+		return nil, err
+	}
+
+	commit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		// log
+		return nil, err
+	}
+
+	for f := range result {
+		gitResult := []SearchResult{}
+		blame, err := git.Blame(commit, f)
+
+		if err == nil {
+
+			for i, line := range blame.Lines {
+				if strings.Contains(line.Text, "TODO") {
+					match := SearchResult{line: i, file: f, content: strings.TrimSpace(line.Text), author: line.Author}
+					gitResult = append(gitResult, match)
+				}
+			}
+		}
+
+		searchResults[f] = gitResult
+	}
+
+	return searchResults, nil
+}

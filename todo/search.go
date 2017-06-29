@@ -27,20 +27,23 @@ import (
 // SearchResult is a struct to store search result
 type SearchResult struct {
 	file    string
-	line    int64
+	line    int
 	content string
 	author  string
 }
 
+// SearchResults is a map to store multiple SearchResult where the key is the file name
+type SearchResults map[string][]SearchResult
+
 // Search will walk through all directories starting at the given path and will find
 // all files that match the search criteria
-func Search(path string) []SearchResult {
-	searchResults := []SearchResult{}
-	filepath.Walk(path, visit(&searchResults))
+func Search(path string) SearchResults {
+	searchResults := make(map[string][]SearchResult)
+	filepath.Walk(path, visit(searchResults))
 	return searchResults
 }
 
-func visit(searchResults *[]SearchResult) filepath.WalkFunc {
+func visit(searchResults SearchResults) filepath.WalkFunc {
 	searchTerm := "TODO"
 	return func(path string, f os.FileInfo, err error) error {
 		if err != nil {
@@ -50,14 +53,17 @@ func visit(searchResults *[]SearchResult) filepath.WalkFunc {
 		if f.IsDir() {
 			return nil
 		}
-		*searchResults = append(*searchResults, SearchFile(path, []byte(searchTerm))...)
+		result := SearchFile(path, []byte(searchTerm))
+		if len(result) > 0 {
+			searchResults[path] = append(searchResults[path], result...)
+		}
 		return nil
 	}
 }
 
 // Search for given pattern on the file
 func SearchFile(file string, pat []byte) []SearchResult {
-	line := int64(1)
+	line := 1
 	searchResults := []SearchResult{}
 
 	f, err := os.Open(file)
@@ -81,9 +87,14 @@ func SearchFile(file string, pat []byte) []SearchResult {
 }
 
 // PrintSearchResults will print the given searchResults to stdout
-func PrintSearchResults(searchResults []SearchResult) {
-	fmt.Printf("Found %d outstand TODOs!\n\n", len(searchResults))
-	for _, result := range searchResults {
-		fmt.Printf("%s [%d] %s\n", result.file, result.line, result.content)
+func PrintSearchResults(searchResults SearchResults) {
+	var count int
+	for _, v := range searchResults {
+		for _, result := range v {
+			fmt.Printf("%s [%d] %s\n", result.file, result.line, result.content)
+			count++
+		}
 	}
+
+	fmt.Printf("\n\nFound %d outstand TODOs!\n", count)
 }

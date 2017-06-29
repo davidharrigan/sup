@@ -17,6 +17,7 @@ package cmd
 import (
 	"github.com/davidharrigan/sup/todo"
 	"github.com/spf13/cobra"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 // listCmd represents the list command
@@ -33,8 +34,17 @@ func listRun(cmd *cobra.Command, args []string) {
 		root = args[0]
 	}
 	result := todo.Search(root)
+
 	// determine if this is a git directory
-	todo.PrintSearchResults(result)
+	r, err := git.PlainOpen(root)
+	if err == nil {
+		author := "dharrigan118@gmail.com"
+		gitResult, _ := todo.SearchCurrentCommit(r, author, result)
+		todo.PrintSearchResults(gitResult)
+	} else {
+
+		todo.PrintSearchResults(result)
+	}
 }
 
 func init() {

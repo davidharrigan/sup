@@ -1,0 +1,7 @@
+package: github.com/davidharrigan/sup
+import:
+- package: github.com/spf13/cobra
+- package: gopkg.in/src-d/go-git.v4
+  version: ~4.0.0-rc9
+  subpackages:
+  - plumbing/object

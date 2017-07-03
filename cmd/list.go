@@ -35,7 +35,7 @@ var skipAuthor bool
 var skipGit bool
 var email string
 
-const LookupTemplate = "Looking up commits by %s...\n\n"
+const LookupTemplate = "Looking up commits by %s...\n"
 
 func listRun(cmd *cobra.Command, args []string) {
 	root := "./"

@@ -5,7 +5,7 @@ If the path belongs to a git repository, the result can further be filtered by t
 
 ## Usage
 ### `sup`
-```bash
+```
 sup [command]
 
 Available Commands:
@@ -15,7 +15,7 @@ Use "sup [command] --help" for more information about a command.
 ```
 
 ### `sup list`
-```bash
+```
 sup list [path] [flags]
 
 Flags:
@@ -25,4 +25,28 @@ Flags:
 
 ```
 
+```
+$ sup list
+
+Looking up commits by dharrigan118@gmail.com...
+
+> inner/search_test.py 2 results
+inner/search_test.py [0] >>> # TODO
+inner/search_test.py [2] >>> return "test"  # TODO
+
+> simple.txt 1 results
+simple.txt [0] >>> TODO hello
+
+
+Found 3 outstanding TODOs!
+```
+
 ## Install
+```bash
+go get github.com/davidharrigan/sup
+```
+
+Make sure your $GOPATH bin is in your $PATH:
+```bash
+export PATH=$PATH:$GOPATH/bin
+```

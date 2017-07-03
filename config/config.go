@@ -12,14 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package config
 
 import (
-	"github.com/davidharrigan/sup/cmd"
-	"github.com/davidharrigan/sup/config"
+	"fmt"
+	"log"
 )
 
-func main() {
-	config.SetupLogger()
-	cmd.Execute()
+func SetupLogger() {
+	log.SetFlags(0)
+	log.SetOutput(new(logWriter))
+}
+
+type logWriter struct{}
+
+func (writer logWriter) Write(bytes []byte) (int, error) {
+	return fmt.Print(string(bytes))
 }

@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/davidharrigan/sup/todo"
 	"github.com/spf13/cobra"
 
@@ -33,6 +34,8 @@ var listCmd = &cobra.Command{
 var skipAuthor bool
 var skipGit bool
 var email string
+
+const LookupTemplate = "Looking up commits by %s...\n\n"
 
 func listRun(cmd *cobra.Command, args []string) {
 	root := "./"
@@ -53,9 +56,9 @@ func listRun(cmd *cobra.Command, args []string) {
 			if author == "" {
 				author = todo.LookupGitUser()
 			}
-		}
-		if author != "" {
-			fmt.Printf("Looking up commits by %s...\n\n", author)
+			if author != "" {
+				fmt.Printf(LookupTemplate, author)
+			}
 		}
 	} else {
 		author = ""

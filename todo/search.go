@@ -17,13 +17,17 @@ package todo
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+)
+
+const (
+	OutputTemplate            = "%s [%d] >>> %s\n"
+	OutputResultCountTemplate = "\n\nFound %d outstanding TODOs!\n"
 )
 
 // SearchResult is a struct to store search result
@@ -49,7 +53,7 @@ func visit(searchResults SearchResults, commit *object.Commit, author string) fi
 	searchTerm := "TODO"
 	return func(path string, f os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return nil
 		}
 		if f.IsDir() {
@@ -92,7 +96,7 @@ func SearchFile(file string, pat []byte) []SearchResult {
 		line++
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Println(os.Stderr, err)
 	}
 	return searchResults
 }
@@ -102,10 +106,10 @@ func PrintSearchResults(searchResults SearchResults) {
 	var count int
 	for _, v := range searchResults {
 		for _, result := range v {
-			fmt.Printf("%s [%d] >>> %s\n", result.file, result.line, result.content)
+			log.Printf(OutputTemplate, result.file, result.line, result.content)
 			count++
 		}
 	}
 
-	fmt.Printf("\n\nFound %d outstand TODOs!\n", count)
+	log.Printf(OutputResultCountTemplate, count)
 }

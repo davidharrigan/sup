@@ -104,7 +104,8 @@ func SearchFile(file string, pat []byte) []SearchResult {
 // PrintSearchResults will print the given searchResults to stdout
 func PrintSearchResults(searchResults SearchResults) {
 	var count int
-	for _, v := range searchResults {
+	for f, v := range searchResults {
+		log.Printf("\n> %s %d results", f, len(v))
 		for _, result := range v {
 			log.Printf(OutputTemplate, result.file, result.line, result.content)
 			count++
